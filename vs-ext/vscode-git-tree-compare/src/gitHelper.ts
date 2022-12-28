@@ -9,6 +9,7 @@ import { API as GitAPI } from './typings/git';
 
 export async function createGit(gitApi: GitAPI, outputChannel: OutputChannel): Promise<Git> {
     outputChannel.appendLine(`Using git from ${gitApi.git.path}`);
+    console.log(`ihz createGit Using git from: ${gitApi.git.path}`) // ihz: git
     return new Git({
         gitPath: gitApi.git.path,
         userAgent: '',

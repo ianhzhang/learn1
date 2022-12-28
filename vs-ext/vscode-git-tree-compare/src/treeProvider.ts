@@ -135,12 +135,18 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     // Other
     private readonly disposables: Disposable[] = [];
 
-    constructor(private readonly git: Git, private readonly gitApi: GitAPI, private readonly outputChannel: OutputChannel, private readonly globalState: Memento,
+    constructor(private readonly git: Git, 
+                private readonly gitApi: GitAPI, 
+                private readonly outputChannel: OutputChannel, 
+                private readonly globalState: Memento,
                 private readonly asAbsolutePath: (relPath: string) => string) {
+        console.log("ihz11a GitTreeCompareProvider  constructor");
         this.readConfig();
     }
 
     async init(treeView: TreeView<Element>) {
+        console.log("ihz11b GitTreeCompareProvider init");
+
         this.treeView = treeView
 
         // use arbitrary repository at start if there are multiple (prefer selected ones)
@@ -184,6 +190,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async setRepository(repositoryRoot: string) {
+        console.log("ihz13 setRepository");
+
         const dotGit = await this.git.getRepositoryDotGit(repositoryRoot);
         const repository = this.git.open(repositoryRoot, dotGit);
         const absGitDir = await getAbsGitDir(repository);
@@ -217,6 +225,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async unsetRepository() {
+        console.log("ihz14 unsetRepository");
+
         this.repository = undefined;
         this._onDidChangeTreeData.fire();
         this.log('No repository selected');
@@ -225,6 +235,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async changeRepository(repositoryRoot: string) {
+        console.log("ihz15 changeRepository");
+
         try {
             await this.setRepository(repositoryRoot);
             await this.updateRefs();
@@ -239,6 +251,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async promptChangeRepository() {
+        console.log("ihz16 promptChangeRepository");
+
         const gitRepos = getGitRepositoryFolders(this.gitApi);
         const gitReposWithoutCurrent = gitRepos.filter(w => this.repoRoot !== w);
         const picks = gitReposWithoutCurrent.map(r => new ChangeRepositoryItem(r));
@@ -253,6 +267,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private async handleRepositoryOpened(repository: GitAPIRepository) {
+        console.log("ihz17 handleRepositoryOpened");
+
         if (this.repository === undefined) {
             await this.changeRepository(repository.rootUri.fsPath);
         }
@@ -260,6 +276,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private async handleRepositoryUiChange(repository: GitAPIRepository) {
+        console.log("ihz18 handleRepositoryUiChange");
+
         if (!this.autoChangeRepository || !repository.ui.selected) {
             return;
         }
@@ -276,6 +294,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private async handleWorkspaceFoldersChanged(e: WorkspaceFoldersChangeEvent) {
+        console.log("ihz19 handleWorkspaceFoldersChanged");
+
         // If the folder got removed that was currently active in the diff,
         // then pick an arbitrary new one.
         for (var removedFolder of e.removed) {
@@ -309,6 +329,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private updateTreeRootFolder() {
+        console.log("ihz1a updateTreeRootFolder");
+
         const repoIsWorkspaceSubfolder = this.repoRoot.startsWith(this.workspaceFolder + path.sep);
         if (this.treeRootIsRepo || repoIsWorkspaceSubfolder) {
             this.treeRoot = this.repoRoot;
@@ -318,6 +340,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private readConfig() {
+        console.log("ihz1b readConfig");
+
         const config = workspace.getConfiguration(NAMESPACE);
         this.treeRootIsRepo = config.get<string>('root') === 'repository';
         this.includeFilesOutsideWorkspaceFolderRoot = config.get<boolean>('includeFilesOutsideWorkspaceRoot', true);
@@ -330,9 +354,21 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
         this.findRenames = config.get<boolean>('findRenames', true);
         this.showCollapsed = config.get<boolean>('collapsed', false);
         this.compactFolders = config.get<boolean>('compactFolders', false);
+        // console.log("ihz config:", config) // config is an interface
+        // console.log("ihz includeFilesOutsideWorkspaceFolderRoot:", this.includeFilesOutsideWorkspaceFolderRoot) // is defined in package.json, true
+        // console.log("ihz openChangesOnSelect", this.openChangesOnSelect)    // true
+        // console.log("ihz autoChangeRepository:", this.autoChangeRepository)     // false
+        // console.log("ihz autoRefresh:", this.autoRefresh)   // true
+        // console.log("ihz refreshIndex ", this.refreshIndex)     // true
+        // console.log("ihz fullDiff", this.fullDiff)  // false
+        // console.log("ihz findRenames", this.findRenames)    // true
+        // console.log("ihz showCollapsed", this.showCollapsed) // false
+        // console.log("ihz compactFolders", this.compactFolders)  // true
     }
 
     private async getStoredBaseRef(): Promise<string | undefined> {
+        console.log("ihz1c getStoredBaseRef");
+
         let baseRef = this.globalState.get<string>('baseRef_' + this.repoRoot);
         if (baseRef) {
             if (await this.isRefExisting(baseRef) || await this.isCommitExisting(baseRef)) {
@@ -346,12 +382,16 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private async isRefExisting(refName: string): Promise<boolean> {
+        console.log("ihz1d isRefExisting");
+
         const refs = await this.repository!.getRefs();
         const exists = refs.some(ref => ref.name === refName);
         return exists;
     }
 
     private async isCommitExisting(id: string): Promise<boolean> {
+        console.log("ihz1e isCommitExisting");
+
         try {
             await this.repository!.getCommit(id);
             return true;
@@ -361,14 +401,20 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private updateStoredBaseRef(baseRef: string) {
+        console.log("ihz1f updateStoredBaseRef");
+
         this.globalState.update('baseRef_' + this.repoRoot, baseRef);
     }
 
-    getTreeItem(element: Element): TreeItem {
+    getTreeItem(element: Element): TreeItem {   // one of the important interface function we need to implement
+        console.log("ihz1g getTreeItem");
+
         return toTreeItem(element, this.openChangesOnSelect, this.iconsMinimal, this.showCollapsed, this.viewAsList, this.asAbsolutePath);
     }
 
-    async getChildren(element?: Element): Promise<Element[]> {
+    async getChildren(element?: Element): Promise<Element[]> {  // one of the important interface function we need to implement
+        console.log("ihz1h getChildren");
+
         if (!element) {
             if (!this.repository) {
                 return [];
@@ -402,6 +448,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
 
     private async updateRefs(baseRef?: string): Promise<void>
     {
+        console.log("ihz1i updateRefs");
+
         this.log('Updating refs');
         try {
             const headLastChecked = new Date();
@@ -478,6 +526,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
 
     @throttle
     private async updateDiff(fireChangeEvents: boolean) {
+        console.log("ihz1j updateDiff");
+
         if (!this.baseRef) {
             await this.updateRefs();
         }
@@ -566,6 +616,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private async isHeadChanged() {
+        console.log("ihz1k isHeadChanged");
+
         // Note that we can't rely on filesystem change notifications for .git/HEAD
         // because the workspace root may be a subfolder of the repo root
         // and change notifications are currently limited to workspace scope.
@@ -588,6 +640,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
 
     @debounce(2000)
     private async handleWorkspaceChange(uri: Uri) {
+        console.log("ihz1l handleWorkspaceChange");
+
         if (!this.autoRefresh || !this.repository) {
             return
         }
@@ -632,6 +686,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private async handleConfigChange() {
+        console.log("ihz1m handleConfigChange");
+
         const oldTreeRootIsRepo = this.treeRootIsRepo;
         const oldInclude = this.includeFilesOutsideWorkspaceFolderRoot;
         const oldOpenChangesOnSelect = this.openChangesOnSelect;
@@ -674,6 +730,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private getFileSystemEntries(folder: string, useFilesOutsideTreeRoot: boolean): FileSystemElement[] {
+        console.log("ihz1n getFileSystemEntries");
+
         const entries: FileSystemElement[] = [];
         const files = useFilesOutsideTreeRoot ? this.filesOutsideTreeRoot : this.filesInsideTreeRoot;
         const relPathBase = useFilesOutsideTreeRoot ? this.repoRoot : this.treeRoot;
@@ -756,6 +814,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     private getDiffStatus(fileEntry?: FileElement): IDiffStatus | undefined {
+        console.log("ihz1o getDiffStatus");
+
         if (fileEntry) {
             return fileEntry;
         }
@@ -772,6 +832,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async openChanges(fileEntry?: FileElement) {
+        console.log("ihz1p openChanges");
+
         const diffStatus = this.getDiffStatus(fileEntry);
         if (!diffStatus) {
             return;
@@ -780,6 +842,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async doOpenChanges(srcAbsPath: string, dstAbsPath: string, status: StatusCode, preview=true) {
+        console.log("ihz1q doOpenChanges");
+
         const right = Uri.file(dstAbsPath);
         const left = this.gitApi.toGitUri(Uri.file(srcAbsPath), this.mergeBase);
 
@@ -799,6 +863,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     openAllChanges(entry: RefElement | RepoRootElement | FolderElement | undefined) {
+        console.log("ihz1r openAllChanges");
+
         const withinFolder = entry instanceof FolderElement ? entry.dstAbsPath : undefined;
         for (const file of this.iterFiles(withinFolder)) {
             this.doOpenChanges(file.srcAbsPath, file.dstAbsPath, file.status, false);
@@ -806,6 +872,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async openFile(fileEntry?: FileElement) {
+        console.log("ihz1s openFile");
+
         const diffStatus = this.getDiffStatus(fileEntry);
         if (!diffStatus) {
             return;
@@ -814,6 +882,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async doOpenFile(dstAbsPath: string, status: StatusCode, preview=false) {
+        console.log("ihz1t doOpenFile");
+
         const right = Uri.file(dstAbsPath);
         const left = this.gitApi.toGitUri(right, this.mergeBase);
         const uri = status === 'D' ? left : right;
@@ -824,6 +894,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     openChangedFiles(entry: RefElement | RepoRootElement | FolderElement | undefined) {
+        console.log("ihz1u openChangedFiles");
+
         const withinFolder = entry instanceof FolderElement ? entry.dstAbsPath : undefined;
         for (const file of this.iterFiles(withinFolder)) {
             if (file.status == 'D') {
@@ -834,6 +906,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     *iterFiles(withinFolder: string | undefined) {
+        console.log("ihz1v iterFiles");
+
         for (let filesMap of [this.filesInsideTreeRoot, this.filesOutsideTreeRoot]) {
             for (let [folder, files] of filesMap.entries()) {
                 if (withinFolder && !folder.startsWith(withinFolder)) {
@@ -849,6 +923,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async promptChangeBase() {
+        console.log("ihz1w promptChangeBase");
+
         if (!this.repository) {
             window.showErrorMessage('No repository selected');
             return;
@@ -912,6 +988,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async manualRefresh() {
+        console.log("ihz1x manualRefresh");
+
         window.withProgress({ location: ProgressLocation.Window, title: 'Updating Tree' }, async _ => {
             try {
                 if (await this.isHeadChanged()) {
@@ -928,16 +1006,22 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async switchToMergeDiff() {
+        console.log("ihz1y switchToMergeDiff");
+
         const config = workspace.getConfiguration(NAMESPACE);
         await config.update('diffMode', 'merge', true);
     }
 
     async switchToFullDiff() {
+        console.log("ihz1z switchToFullDiff");
+
         const config = workspace.getConfiguration(NAMESPACE);
         await config.update('diffMode', 'full', true);
     }
 
     viewAsTree(v: boolean) {
+        console.log("ihz1aa viewAsTree");
+
         const viewAsList = !v;
         if (viewAsList === this.viewAsList)
             return;
@@ -955,6 +1039,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
 function toTreeItem(element: Element, openChangesOnSelect: boolean, iconsMinimal: boolean,
                     showCollapsed: boolean, viewAsList: boolean,
                     asAbsolutePath: (relPath: string) => string): TreeItem {
+    console.log("ihz1ab toTreeItem");
+    
     const gitIconRoot = asAbsolutePath('resources/git-icons');
     if (element instanceof FileElement) {
         const item = new TreeItem(element.label);
@@ -1015,6 +1101,8 @@ function toTreeItem(element: Element, openChangesOnSelect: boolean, iconsMinimal
 }
 
 function toIconName(element: FileElement) {
+    console.log("ihz1ac toIconName");
+
     switch(element.status) {
         case 'U': return 'status-untracked';
         case 'A': return 'status-added';
@@ -1027,6 +1115,8 @@ function toIconName(element: FileElement) {
 }
 
 function getStatusText(element: FileElement) {
+    console.log("ihz1ad getStatusText");
+
     switch(element.status) {
         case 'U': return 'Untracked';
         case 'A': return 'Added';
@@ -1039,6 +1129,8 @@ function getStatusText(element: FileElement) {
 }
 
 function sortedArraysEqual<T> (a: T[], b: T[]): boolean {
+    console.log("ihz1ae sortedArraysEqual");
+
     if (a.length != b.length) {
         return false;
     }

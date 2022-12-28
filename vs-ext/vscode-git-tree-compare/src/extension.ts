@@ -7,6 +7,8 @@ import { toDisposable } from './git/util';
 import { GitExtension } from './typings/git';
 
 export function activate(context: ExtensionContext) {
+    console.log("ihz00 activate");
+    
     const disposables: Disposable[] = [];
     context.subscriptions.push(new Disposable(() => Disposable.from(...disposables).dispose()));
 
@@ -72,18 +74,29 @@ export function activate(context: ExtensionContext) {
         runAfterInit(() => provider!.viewAsTree(true));
     });
 
+    console.log("ihz01 call createGit");
+
     createGit(gitApi, outputChannel).then(async git => {
+        console.log("ihz02 create then");
         const onOutput = (str: string) => outputChannel.append(str);
         git.onOutput.addListener('log', onOutput);
         disposables.push(toDisposable(() => git.onOutput.removeListener('log', onOutput)));
 
+        // console.log("ihz03a call GitTreeCompareProvider: ", context.globalState);     // an interface
+        // console.log("ihz03b call GitTreeCompareProvider: ", context.asAbsolutePath);  // a function
+        // git is an object
+
+        console.log("ihz04a extension call GitTreeCompareProvider to create a provider");
+
         provider = new GitTreeCompareProvider(git, gitApi, outputChannel, context.globalState, context.asAbsolutePath);
 
-        const treeView = window.createTreeView(
-            NAMESPACE,
+        console.log("ihz04b extension call window.createTreeView to create a treeView");
+        const treeView = window.createTreeView(     // library code
+            NAMESPACE,  // gitTreeCompare
             {treeDataProvider: provider}
         );
 
+        console.log("ihz04c extension call init for provider and treeView");
         provider.init(treeView);
     });
 }
