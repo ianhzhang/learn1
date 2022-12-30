@@ -151,14 +151,20 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
 
         // use arbitrary repository at start if there are multiple (prefer selected ones)
         const gitRepos = getGitRepositoryFolders(this.gitApi, true);
+        // console.log("ihz11b-1", gitRepos);   // root of repo  /home/user/tests
+
         if (gitRepos.length > 0) {
-            await this.changeRepository(gitRepos[0]);
+            console.log('ihz11b-2 call changeRepository');    // hit
+            await this.changeRepository(gitRepos[0]);   // ihz15, ihz13, ihz1h, ihz1a, ihz1i, ihz1c, ihz1d, ihz1f, ihz1j
         }
+        // console.log('ihz11b-3 continue');
 
         this.disposables.push(workspace.onDidChangeConfiguration(this.handleConfigChange, this));
         this.disposables.push(workspace.onDidChangeWorkspaceFolders(this.handleWorkspaceFoldersChanged, this));
         this.disposables.push(this.gitApi.onDidOpenRepository(this.handleRepositoryOpened, this));
-        for (const repository of this.gitApi.repositories) {
+        for (const repository of this.gitApi.repositories) {    
+            // console.log("ihz11b-4", repository); // repository is standardlib  interface
+            // console.log('ihz11b-5')
             this.disposables.push(repository.ui.onDidChange(() => this.handleRepositoryUiChange(repository)));
         }
 
@@ -181,32 +187,39 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
             this.log(`Ignoring irrelevant change: ${uri.fsPath}`);
             return false;
         }
-
+        // console.log("ihz11b-6");
         const fsWatcher = workspace.createFileSystemWatcher('**');
         this.disposables.push(fsWatcher);
         const onWorkspaceChange = anyEvent(fsWatcher.onDidChange, fsWatcher.onDidCreate, fsWatcher.onDidDelete);
         const onRelevantWorkspaceChange = filterEvent(onWorkspaceChange, isRelevantChange);
         this.disposables.push(onRelevantWorkspaceChange(this.handleWorkspaceChange, this));
+        console.log("ihz11b-7 end of GitTreeCompareProvider init");
+        /*
+            ihz1h getChildren
+            ihz1g getTreeItem
+            ihz1ab  toTreeItem
+        */
     }
 
     async setRepository(repositoryRoot: string) {
-        console.log("ihz13 setRepository");
+        console.log("ihz13 setRepository", repositoryRoot);   // /home/user/tests
 
-        const dotGit = await this.git.getRepositoryDotGit(repositoryRoot);
-        const repository = this.git.open(repositoryRoot, dotGit);
-        const absGitDir = await getAbsGitDir(repository);
-        const absGitCommonDir = await getAbsGitCommonDir(repository);
-        const repoRoot = normalizePath(repository.root);
+        const dotGit = await this.git.getRepositoryDotGit(repositoryRoot);      // our own function in git.ts
+        const repository = this.git.open(repositoryRoot, dotGit);   // own function, repositoryRoot: /home/user/tests, dotGit: /home/user/tests/.git
+        const absGitDir = await getAbsGitDir(repository);   // absGitDir: /home/user/tests/.git
 
-        const workspaceFolders = getWorkspaceFolders(repoRoot);
+        const absGitCommonDir = await getAbsGitCommonDir(repository);   // /home/user/tests/.git
+        const repoRoot = normalizePath(repository.root);        // /home/user/tests
+        const workspaceFolders = getWorkspaceFolders(repoRoot);     // WorkspaceFolder is a standard interface, it has attribute: uri, name, index
+
         if (workspaceFolders.length == 0) {
             throw new Error(`Could not find any workspace folder for ${repositoryRoot}`);
         }
 
         this.repository = repository;
-        this.absGitCommonDir = absGitCommonDir;
-        this.absGitDir = absGitDir;
-        this.repoRoot = repoRoot;
+        this.absGitCommonDir = absGitCommonDir;     // /home/user/tests/.git
+        this.absGitDir = absGitDir;                 // /home/user/tests/.git
+        this.repoRoot = repoRoot;                   // /home/user/tests
 
         // Sort descending by folder depth
         workspaceFolders.sort((a, b) => {
@@ -216,12 +229,15 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
         });
         // If repo appears in multiple workspace folders, pick the deepest one.
         // TODO let the user choose which one
-        this.workspaceFolder = normalizePath(workspaceFolders[0].uri.fsPath);
+        this.workspaceFolder = normalizePath(workspaceFolders[0].uri.fsPath);   // /home/user/tests, normmalizePath is in fsUtils.ts
         this.updateTreeRootFolder();
-        this.log('Using repository: ' + this.repoRoot);
+        this.log('Using repository: ' + this.repoRoot); // /home/user/tests
+
 
         const repoName = path.basename(repoRoot);
-        this.treeView.title = repoName;
+        console.log("ihz13-2 repoName:", repoName)
+
+        this.treeView.title = repoName;     // tests.   It is on top of the view: GIT TREE COMPARE: TESTS
     }
 
     async unsetRepository() {
@@ -235,10 +251,10 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     }
 
     async changeRepository(repositoryRoot: string) {
-        console.log("ihz15 changeRepository");
+        console.log("ihz15 changeRepository", repositoryRoot);  // /home/user/tests
 
         try {
-            await this.setRepository(repositoryRoot);
+            await this.setRepository(repositoryRoot);   // /home/user/tests
             await this.updateRefs();
             await this.updateDiff(false);
         } catch (e: any) {
@@ -248,6 +264,7 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
             return;
         }
         this._onDidChangeTreeData.fire();
+        console.log("ihz15-9 end of changeRepository")
     }
 
     async promptChangeRepository() {

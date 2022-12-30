@@ -98,5 +98,6 @@ export function activate(context: ExtensionContext) {
 
         console.log("ihz04c extension call init for provider and treeView");
         provider.init(treeView);
+        console.log("ihz05-- end of createGit.then()");
     });
 }
