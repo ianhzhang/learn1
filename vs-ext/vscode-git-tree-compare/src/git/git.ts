@@ -457,6 +457,8 @@ export class Git {
 
 	async getRepositoryRoot(repositoryPath: string): Promise<string> {
 		const result = await this.exec(repositoryPath, ['rev-parse', '--show-toplevel'], { log: false });
+		// git rev-parse  --show-toplevel
+		// displays the root directory of your current Git repository
 
 		// Keep trailing spaces which are part of the directory name
 		const repoPath = path.normalize(result.stdout.trimLeft().replace(/[\r\n]+$/, ''));

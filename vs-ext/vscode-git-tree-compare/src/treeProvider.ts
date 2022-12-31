@@ -135,8 +135,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     // Other
     private readonly disposables: Disposable[] = [];
 
-    constructor(private readonly git: Git, 
-                private readonly gitApi: GitAPI, 
+    constructor(private readonly git: Git,          // our git object, which has gitPath (git)
+                private readonly gitApi: GitAPI,    // vscode api 
                 private readonly outputChannel: OutputChannel, 
                 private readonly globalState: Memento,
                 private readonly asAbsolutePath: (relPath: string) => string) {
@@ -150,7 +150,7 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
         this.treeView = treeView
 
         // use arbitrary repository at start if there are multiple (prefer selected ones)
-        const gitRepos = getGitRepositoryFolders(this.gitApi, true);
+        const gitRepos = getGitRepositoryFolders(this.gitApi, true);    // is our function
         // console.log("ihz11b-1", gitRepos);   // root of repo  /home/user/tests
 
         if (gitRepos.length > 0) {
@@ -204,8 +204,8 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
     async setRepository(repositoryRoot: string) {
         console.log("ihz13 setRepository", repositoryRoot);   // /home/user/tests
 
-        const dotGit = await this.git.getRepositoryDotGit(repositoryRoot);      // our own function in git.ts
-        const repository = this.git.open(repositoryRoot, dotGit);   // own function, repositoryRoot: /home/user/tests, dotGit: /home/user/tests/.git
+        const dotGit = await this.git.getRepositoryDotGit(repositoryRoot);      // dotGit: /home/user/tests/.git, getRepositoryDotGit our own function in git.ts
+        const repository = this.git.open(repositoryRoot, dotGit);   // own function, repositoryRoot: /home/user/tests, create a Repository from root
         const absGitDir = await getAbsGitDir(repository);   // absGitDir: /home/user/tests/.git
 
         const absGitCommonDir = await getAbsGitCommonDir(repository);   // /home/user/tests/.git

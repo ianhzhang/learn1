@@ -18,8 +18,10 @@ export async function createGit(gitApi: GitAPI, outputChannel: OutputChannel): P
 }
 
 export function getWorkspaceFolders(repositoryFolder: string): WorkspaceFolder[] {
+
     const normRepoFolder = normalizePath(repositoryFolder);
     const allWorkspaceFolders = workspace.workspaceFolders || [];
+    // console.log("ihzx allWorkspaceFolders:", allWorkspaceFolders);
     const workspaceFolders = allWorkspaceFolders.filter(ws => {
         const normWsFolder = normalizePath(ws.uri.fsPath);
         return normWsFolder === normRepoFolder ||
@@ -43,6 +45,10 @@ export function getGitRepositoryFolders(git: GitAPI, selectedFirst=false): strin
 
 export async function getAbsGitDir(repo: Repository): Promise<string> {
     // We don't use --absolute-git-dir here as that requires git >= 2.13.
+
+    // ~/github/learn1/vs-ext/vscode-git-tree-compare/src$ git rev-parse  --git-dir
+    // /home/user/github/learn1/.git
+
     let res = await repo.exec(['rev-parse', '--git-dir']);
     let dir = res.stdout.trim();
     if (!path.isAbsolute(dir)) {
@@ -52,11 +58,17 @@ export async function getAbsGitDir(repo: Repository): Promise<string> {
 }
 
 export async function getAbsGitCommonDir(repo: Repository): Promise<string> {
+    // ~/github/learn1/vs-ext/vscode-git-tree-compare/src$ git rev-parse  --git-common-dir
+    // ../../../.git
+    // console.log("ihzx repo.root", repo.root);   // /home/user/tests
     let res = await repo.exec(['rev-parse', '--git-common-dir']);
     let dir = res.stdout.trim();
+    // console.log("ihzx01 dir", dir); // .git
+
     if (!path.isAbsolute(dir)) {
         dir = path.join(repo.root, dir);
     }
+    // console.log("ihzx1 dir", dir);  // /home/user/tests/.git
     return dir;
 }
 
