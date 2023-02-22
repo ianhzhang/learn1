@@ -875,6 +875,13 @@ export class GitTreeCompareProvider implements TreeDataProvider<Element>, Dispos
             preview: preview
         };
         const filename = path.basename(dstAbsPath);
+
+        // pay attention to left and right
+        console.log("ihz1x1 filename", filename);    // extension.js
+        console.log("ihz1x2 left:", left);           // left: Uri,  schema: git,  path: /home/user/tests/extension.js, query: '{"path":"/home/user/tests/extension.js","ref":"bd03165382ea080db5a9d86b2620f3bd2e964b88"}'
+        console.log("ihz1x3 right:", right);         // right: Uri, schema: file, path: /home/user/tests/extension.js, query: ""
+        console.log("ihz1x4 options:", options);     // {preview: true}
+        
         return await commands.executeCommand('vscode.diff',
             left, right, filename + " (Working Tree)", options);
     }

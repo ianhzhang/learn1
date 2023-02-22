@@ -1,0 +1,87 @@
+{
+  "name": "tree-view",
+  "displayName": "tree-view",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "*"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "myTreeView",
+          "icon": "./resources/logo.svg",
+          "title": "Tree View",
+          "description": "This will display an icon"
+        }
+      ]
+    },
+    "views": {
+      "myTreeView": [
+        {
+          "id": "myTreeView",
+          "name": "none",
+          "icon": "./resources/logo.svg",
+          "command": "tree-view.helloWorld"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "myTreeView.helloWorld",
+        "title": "Ian Tree View"
+      },
+      {
+        "command": "myTreeView.context_menu_run1",
+        "title": "Run1"
+      },
+      {
+        "command": "myTreeView.context_menu_run2",
+        "title": "Run2"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "myTreeView.context_menu_run1",
+          "when": "view == myTreeView",
+          "group": "myTreeView@0"
+        },
+        {
+          "command": "myTreeView.context_menu_run2",
+          "when": "view == myTreeView",
+          "group": "myTreeView@1"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.3",
+    "@vscode/test-electron": "^2.2.0"
+  }
+}
