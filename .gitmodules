@@ -1,0 +1,3 @@
+[submodule "learn_velero/from_velero_org/velero"]
+	path = learn_velero/from_velero_org/velero
+	url = https://github.com/vmware-tanzu/velero.git
